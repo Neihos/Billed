@@ -2,9 +2,9 @@
  * @jest-environment jsdom
  */
 
-import LoginUI from "../views/LoginUI";
+import LoginUI from "../views/LoginUI.js";
 import Login from "../containers/Login.js";
-import { ROUTES } from "../constants/routes";
+import { ROUTES } from "../constants/routes.js";
 import { fireEvent, screen } from "@testing-library/dom";
 
 describe("Given that I am a user on login page", () => {
