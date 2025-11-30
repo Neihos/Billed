@@ -21,7 +21,28 @@ const row = (bill) => {
 
 const rows = (data) => {
   if (!Array.isArray(data) || data.length === 0) return "";
-  const sorted = [...data].sort((a, b) => new Date(b.date) - new Date(a.date));
+  const normalizeDate = (str) => {
+    return new Date(
+      str
+        .replace("Janv.", "Jan")
+        .replace("Févr.", "Feb")
+        .replace("Mars.", "Mar")
+        .replace("Avr.", "Apr")
+        .replace("Mai.", "May")
+        .replace("Juin.", "Jun")
+        .replace("Juil.", "Jul")
+        .replace("Août.", "Aug")
+        .replace("Sept.", "Sep")
+        .replace("Oct.", "Oct")
+        .replace("Nov.", "Nov")
+        .replace("Déc.", "Dec")
+    );
+  };
+
+  const sorted = [...data].sort(
+    (a, b) => normalizeDate(b.date) - normalizeDate(a.date)
+  );
+
   return sorted.map((bill) => row(bill)).join("");
 };
 

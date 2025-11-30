@@ -19,7 +19,6 @@ describe("Given I am connected as an employee", () => {
 
       const form = screen.getByTestId("form-new-bill");
       expect(form).toBeTruthy();
-
       expect(screen.getByTestId("expense-type")).toBeTruthy();
       expect(screen.getByTestId("expense-name")).toBeTruthy();
       expect(screen.getByTestId("amount")).toBeTruthy();
@@ -74,7 +73,7 @@ describe("Given I am connected as an employee", () => {
       expect(newBill.fileUrl).toBe("https://localhost:3456/images/test.jpg");
     });
 
-    test("Then uploading an invalid file should show a format error message", () => {
+    test("Then uploading an invalid file should show a format error message.", () => {  // HandleChangeFile
       const html = NewBillUI();
       document.body.innerHTML = html;
 
@@ -115,7 +114,7 @@ describe("Given I am connected as an employee", () => {
       );
     });
 
-    test("Then submitting the form should call update bill API and redirect to Bills page", async () => {
+    test("Then submitting the form should call the update bill POST API method and navigate back to the Bills page", async () => {
       // GIVEN : page NewBill affichée
       const html = NewBillUI();
       document.body.innerHTML = html;
@@ -178,6 +177,78 @@ describe("Given I am connected as an employee", () => {
 
       // On est redirigé vers la page Bills
       expect(onNavigate).toHaveBeenCalledWith(ROUTES_PATH.Bills);
+    });
+
+    test("Then an API error 404 should be handled", async () => {
+      const html = NewBillUI();
+      document.body.innerHTML = html;
+
+      Object.defineProperty(window, "localStorage", {
+        value: localStorageMock,
+      });
+      window.localStorage.setItem(
+        "user",
+        JSON.stringify({ email: "test@test.com" })
+      );
+
+      const onNavigate = jest.fn();
+      const newBill = new NewBill({
+        document,
+        onNavigate,
+        store: mockStore,
+        localStorage: window.localStorage,
+      });
+
+      // On simule un fichier déjà uploadé
+      newBill.fileUrl = "https://localhost/test.jpg";
+      newBill.fileName = "test.jpg";
+
+      // On mock l'API update pour qu'elle rejette avec une erreur 404
+      const updateSpy = jest
+        .spyOn(mockStore.bills(), "update")
+        .mockRejectedValueOnce(new Error("Erreur 404"));
+
+      const form = screen.getByTestId("form-new-bill");
+
+      // WHEN : on soumet le formulaire
+      fireEvent.submit(form);
+
+      // THEN : même en cas d'erreur, l'API a bien été appelée
+      expect(updateSpy).toHaveBeenCalled();
+    });
+
+    test("Then an API error 500 should be handled", async () => {
+      const html = NewBillUI();
+      document.body.innerHTML = html;
+
+      Object.defineProperty(window, "localStorage", {
+        value: localStorageMock,
+      });
+      window.localStorage.setItem(
+        "user",
+        JSON.stringify({ email: "test@test.com" })
+      );
+
+      const onNavigate = jest.fn();
+      const newBill = new NewBill({
+        document,
+        onNavigate,
+        store: mockStore,
+        localStorage: window.localStorage,
+      });
+
+      newBill.fileUrl = "https://localhost/test.jpg";
+      newBill.fileName = "test.jpg";
+
+      const updateSpy = jest
+        .spyOn(mockStore.bills(), "update")
+        .mockRejectedValueOnce(new Error("Erreur 500"));
+
+      const form = screen.getByTestId("form-new-bill");
+
+      fireEvent.submit(form);
+
+      expect(updateSpy).toHaveBeenCalled();
     });
   });
 });
